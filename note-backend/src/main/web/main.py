@@ -9,6 +9,11 @@ tokenManger = global_token_manger
 
 from fastapi.middleware.cors import CORSMiddleware
 
+import os
+from config import GLOBAL_CONFIG
+
+import schedule
+
 """
 cd src/main uvicorn web.main:app --reload --port 8080
 """
@@ -17,8 +22,11 @@ cd src/main uvicorn web.main:app --reload --port 8080
 def deploy_app():
     app.include_router(router, prefix="/api")
     cors_handler()
+    # 凌晨1点拉取代码
+    schedule.every().day.at('01:00').do(force_pull)
     LOG.info("deploy success")
-
+    while True:
+        schedule.run_pending()
 
 
 """
@@ -27,12 +35,12 @@ def deploy_app():
 """
 public_url_list = ['/login', '/logout', '/token/refresh']
 
+
 @app.middleware("http")
 async def tokenInterceptor(request: Request, call_next):
     if is_permit(request):
         return await call_next(request)
     token = request.headers.get("token")
-    print(token)
     if token is not None and tokenManger.parseToken(token=token, token_type=TokenType.API_TOKEN):
         return await call_next(request)
     else:
@@ -66,6 +74,18 @@ def cors_handler():
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+
+"""
+
+强制拉取代码
+"""
+
+
+def force_pull():
+    output = os.popen(
+        'cd ' + GLOBAL_CONFIG.get("note_dir") + ' && git fetch --all && git reset --hard origin/master && git pull')
+    print(output.read())
 
 
 deploy_app()

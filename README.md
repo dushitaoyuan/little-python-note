@@ -21,7 +21,7 @@ npm run dev
 
 http://localhost:8081/#/login
 
-输入账户密码:dushitaoyuan/dushitaoyuan
+输入账户密码: dushitaoyuan/dushitaoyuan
 
 
 
