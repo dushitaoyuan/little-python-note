@@ -50,9 +50,7 @@
           this.$router.push("/index")
         }
       }
-      if (!this.loginShow) {
 
-      }
     },
     methods: {
       login(formName) {

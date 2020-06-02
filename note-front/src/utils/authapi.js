@@ -77,7 +77,7 @@ var authApi = {
     return wsCache.get('api_token');
   },
   isLogin() {
-    if (webCache.get("api_token")) {
+    if (wsCache.get("api_token")) {
       return true;
     }
     return false;
