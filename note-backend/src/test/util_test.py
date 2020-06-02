@@ -20,6 +20,8 @@ print(passwordEncode("dushitaoyuan"))
 
 import os
 import schedule
+import threading
+import time
 
 
 def force_pull():
@@ -36,5 +38,16 @@ def hello():
 
 
 schedule.every().seconds.do(hello)
-while True:
-    schedule.run_pending()
+
+
+def run_all_task():
+    while True:
+        schedule.run_pending()
+
+
+task = threading.Thread(target=run_all_task)
+task.setDaemon(True)
+task.start()
+
+print("sleep start")
+time.sleep(5)

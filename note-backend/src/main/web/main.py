@@ -13,6 +13,7 @@ import os
 from config import GLOBAL_CONFIG
 
 import schedule
+import threading
 
 """
 cd src/main uvicorn web.main:app --reload --port 8080
@@ -20,11 +21,19 @@ cd src/main uvicorn web.main:app --reload --port 8080
 
 
 def deploy_app():
+    LOG.info("deploy app  start")
     app.include_router(router, prefix="/api")
     cors_handler()
     # 凌晨1点拉取代码
     schedule.every().day.at('01:00').do(force_pull)
-    LOG.info("deploy success")
+    task = threading.Thread(target=run_all_task)
+    task.setDaemon(True)
+    task.start()
+    LOG.info("deploy app success")
+
+
+def run_all_task():
+    LOG.info("start task ")
     while True:
         schedule.run_pending()
 
