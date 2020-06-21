@@ -1,7 +1,7 @@
 from web.routers import router
 from config import GLOBAL_CONFIG
-import os
-import time
+import os, re, time
+from fastapi.responses import FileResponse
 
 NOTE_BASE_DIR = GLOBAL_CONFIG.get("note_dir")
 
@@ -25,6 +25,12 @@ def note_detail(notePath: str):
     return read_note_to_str(os.path.join(NOTE_BASE_DIR, notePath))
 
 
+@router.get("/note/img")
+def note_img(imgPath: str):
+    print(imgPath)
+    return FileResponse(imgPath)
+
+
 def list_file(dir: str, ext: str):
     all_file = []
     ext = ext.lower()
@@ -38,10 +44,21 @@ def list_file(dir: str, ext: str):
     return all_file
 
 
+img_regex = re.compile(r"\!\[img\]\((.+?)\)")
+
+
 def read_note_to_str(note_path: str):
     with open(note_path, mode="r", encoding='utf-8') as f:
         data = f.read()
-        return data
+        return re.sub(img_regex, replace_img, data)
+
+
+def replace_img(match):
+    str = match.group()
+    src = str[str.index("(") + 1:str.index(")")]
+    if src.startswith("http"):
+        return str
+    return str.replace(src, GLOBAL_CONFIG.get("note_file_url").format(src))
 
 
 def read_note_title(note_path: str):

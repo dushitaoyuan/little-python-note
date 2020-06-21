@@ -1,4 +1,5 @@
-//系统工具
+/* eslint-disable */
+
 import webCache from 'web-storage-cache'
 
 var wsCache = new webCache();

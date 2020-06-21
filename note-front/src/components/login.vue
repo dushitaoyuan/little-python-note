@@ -20,7 +20,7 @@
 
 <script>
   export default {
-    name: "login",
+    name: 'login',
     data() {
       return {
         labelPosition: 'top',
@@ -39,18 +39,17 @@
           ]
 
         }
-      };
+      }
     },
     mounted() {
-      //如果 已登录,或已设置免密登录 不显示登录页
-      if (!this.authApi.isLogin()) {
-        this.loginShow = false;
+      // 如果 已登录,或已设置免密登录 不显示登录页
+      if (this.authApi.isLogin()) {
+        this.loginShow = false
         if (this.authApi.isRemermber()) {
-          this.authApi.autoRemmeberLogin();
-          this.$router.push("/index")
+          this.authApi.autoRemmeberLogin()
+          this.$router.push('/index')
         }
       }
-
     },
     methods: {
       login(formName) {
@@ -59,10 +58,10 @@
           if (valid) {
             that.authApi.auth(that.loginForm)
           }
-        });
+        })
       },
       reset(formName) {
-        this.$refs[formName].resetFields();
+        this.$refs[formName].resetFields()
       }
     }
   }
