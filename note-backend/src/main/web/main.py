@@ -42,12 +42,13 @@ def run_all_task():
 
 请求鉴权
 """
-public_url_list = ['/login', '/logout', '/token/refresh']
+public_url_list = ['/login', '/logout', '/token/refresh', '/note/img']
 
 
 @app.middleware("http")
 async def tokenInterceptor(request: Request, call_next):
     if is_permit(request):
+        print(request.url)
         return await call_next(request)
     token = request.headers.get("token")
     if token is not None and tokenManger.parseToken(token=token, token_type=TokenType.API_TOKEN):

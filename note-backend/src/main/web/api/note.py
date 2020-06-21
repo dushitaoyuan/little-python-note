@@ -1,6 +1,7 @@
 from web.routers import router
 from config import GLOBAL_CONFIG
 import os, re, time
+from threading import Lock
 from fastapi.responses import FileResponse
 
 NOTE_BASE_DIR = GLOBAL_CONFIG.get("note_dir")
@@ -27,8 +28,8 @@ def note_detail(notePath: str):
 
 @router.get("/note/img")
 def note_img(imgPath: str):
-    print(imgPath)
-    return FileResponse(imgPath)
+    if os.path.exists(imgPath):
+        return FileResponse(imgPath)
 
 
 def list_file(dir: str, ext: str):
@@ -46,19 +47,32 @@ def list_file(dir: str, ext: str):
 
 img_regex = re.compile(r"\!\[img\]\((.+?)\)")
 
+note_path_lock = Lock()
+note_concurrent = {}
+
 
 def read_note_to_str(note_path: str):
     with open(note_path, mode="r", encoding='utf-8') as f:
         data = f.read()
-        return re.sub(img_regex, replace_img, data)
+        note_path_lock.acquire()
+        note_concurrent['note_path'] = note_path
+        data = re.sub(img_regex, replace_img, data)
+        note_concurrent.clear()
+        note_path_lock.release()
+        return data
 
 
+# 渲染图片
 def replace_img(match):
     str = match.group()
-    src = str[str.index("(") + 1:str.index(")")]
-    if src.startswith("http"):
+    img_src = str[str.index("(") + 1:str.index(")")]
+    if img_src.startswith("http"):
         return str
-    return str.replace(src, GLOBAL_CONFIG.get("note_file_url").format(src))
+    img_abs_src = img_src
+    # 图片相对路径拼接为绝对路劲
+    if not os.path.exists(img_src):
+        img_abs_src = os.path.join(os.path.dirname(note_concurrent['note_path']), img_src)
+    return str.replace(img_src, GLOBAL_CONFIG.get("note_file_url").format(img_abs_src))
 
 
 def read_note_title(note_path: str):
